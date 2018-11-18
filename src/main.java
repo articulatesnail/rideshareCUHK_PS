@@ -2,12 +2,12 @@
 import java.util.Scanner;
 import java.sql.*;
 import java.io.*;
-public class CSCI3170Proj {
+public class main {
 
 	// CHANGE START
-	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2633/db0";
-	public static String dbUsername = "Group0";
-	public static String dbPassword = "CSCI3170";
+	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2633/db5";
+	public static String dbUsername = "Group5";
+	public static String dbPassword = "ride";
 	// CHANGE END
 
 	public static Connection connectToOracle(){
@@ -28,7 +28,6 @@ public class CSCI3170Proj {
 	public static void main(String[] args) {
 		Scanner menuAns = new Scanner(System.in);
 		String answer;
-		System.out.println("Welcome to the mission design system!");
 		System.out.println();
 		while(true){
 			try{
@@ -38,13 +37,14 @@ public class CSCI3170Proj {
 					System.out.println("[Error]: Database connection failed, system exit");
 				}else{
 					//CHANGE STARTS
-					System.out.println("-----Main menu-----");
+					System.out.println("Administrator, what would you like to do?");
 					System.out.println("What kinds of operation would you like to perform?");
 					System.out.println("1. Operations for administrator");
 					System.out.println("2. Operations for exploration companies (rental customers)");
 					System.out.println("3. Operations for spacecraft rental staff");
 					System.out.println("0. Exit this program");
 					System.out.print("Enter Your Choice: ");
+
 					answer = menuAns.nextLine();
 				}
 
