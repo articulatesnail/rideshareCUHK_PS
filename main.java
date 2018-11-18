@@ -24,7 +24,7 @@ public class main {
 		return con;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String args[]) {
 		Scanner menuAns = new Scanner(System.in);
 		String answer;
 		System.out.println();

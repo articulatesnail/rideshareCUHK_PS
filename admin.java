@@ -18,44 +18,52 @@ public class admin{
         System.out.println("checked");
     } 
     
-    public static void main(String args[]){
-    int status = 0; 
-    Scanner menuAns = new Scanner(System.in);
-    String answer;
+    public static void main(String args[]) {
+        int status = 0; 
+        Scanner menuAns = new Scanner(System.in);
+        String answer;
 
-    while(status == 0){
+
         System.out.println("Administrator, what would you like to do?");
         System.out.println("1. Create tables");
         System.out.println("2. Delete tables");
         System.out.println("3. Load data");
         System.out.println("4. Check Data");
         System.out.println("5. Go back");
-        System.out.print("Please enter [1-5].");
+    while(status == 0){
+        System.out.print("Please enter [1-5].\n");
 
         answer = menuAns.nextLine();
 
         if(status == 0 ){
 
             switch(answer){
-                case '1':
+                case "1":
                     status =1;
                     create();
-                case '2':
+                    break;
+                case "2":
                     status =1;
                     load();
-                case '3':
+                    break;
+                case "3":
                     status =1;
                     delete();
-                case '4':
+                    break;
+                case "4":
                     status = 1;               
                     check();
-                case '5':
-                    return;
+                    break;
+                case "5":
+                status = 1; 
+                System.out.println("back to main");
+                break;
+                default:
+                    System.out.print("[ERROR] Please enter [1-5]. \n");
             }
         }
-
-        else
-            System.out.print("[ERROR] Please enter [1-5].");
     }
+    menuAns.close();
+    System.out.println("finished");
 }
 }
