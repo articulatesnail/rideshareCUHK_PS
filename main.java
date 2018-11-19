@@ -24,10 +24,12 @@ public class main {
 		return con;
 	}
 
-	public static void main(String args[]) {
+	
+	public static void main(String[] args) {
 		Scanner menuAns = new Scanner(System.in);
 		String answer;
 		System.out.println();
+		int flag=0;
 		while(true){
 			try{
 				Connection mySQLDB = connectToOracle();
@@ -35,16 +37,51 @@ public class main {
 					answer = "0";
 					System.out.println("[Error]: Database connection failed, system exit");
 				}else{
-					//CHANGE STARTS
-					System.out.println("Administrator, what would you like to do?");
-					System.out.println("What kinds of operation would you like to perform?");
-					System.out.println("1. Operations for administrator");
-					System.out.println("2. Operations for exploration companies (rental customers)");
-					System.out.println("3. Operations for spacecraft rental staff");
-					System.out.println("0. Exit this program");
-					System.out.print("Enter Your Choice: ");
+					while (flag==0){
+						System.out.println("Welcome! Who are you?");
+						System.out.println("1. An administrator");
+						System.out.println("2. A passenger");
+						System.out.println("3. A driver");
+						System.out.println("4. Exit this program");
+						System.out.print("Enter Your Choice: ");
+						answer = menuAns.nextLine();
+						
 
-					answer = menuAns.nextLine();
+						switch (answer) { 
+							case "1":
+								System.out.println("1. An administrator");
+								flag=1;
+								break;
+
+							case "2":
+								System.out.println("2. A passenger");
+								break;
+
+							case "3":
+								System.out.println("3. A driver");
+								flag=1;
+								break;
+
+							case "4":
+								flag=1;
+								return;
+							
+							default:
+							
+								System.out.println("Error!");
+								
+
+					}
+					
+							
+
+			
+
+
+				
+
+					
+					}
 				}
 
 				break;
