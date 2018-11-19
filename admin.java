@@ -56,7 +56,7 @@ public class admin{
                     break;
                 case "5":
                 status = 1; 
-                System.out.println("back to main");
+                System.out.println("back to main\n");
                 break;
                 default:
                     System.out.print("[ERROR] Please enter [1-5]. \n");
