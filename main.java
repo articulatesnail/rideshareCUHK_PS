@@ -8,17 +8,47 @@ class admin{
     static Statement statement=null;
 
     private static void create() {              //Create tables
-        String driverTableQuery= "CREATE TABLE Driver" + 
-             "dID INT(64), " +  
-             "Name VARCHAR, " +
-             "vID VARCHAR, " +
-             "PRIMARY KEY (vID))";  
+    
+        String dropTableQuery= "DROP TABLE IF EXISTS Driver;"; 
+        String driverTableQuery=  
+            "CREATE TABLE Driver(" + 
+             "ID INT(16), " +  
+             "Name VARCHAR(30), " +
+             "vID VARCHAR(6), " +
+             "PRIMARY KEY (ID));";  
+        String vehicleTableQuery= "CREATE TABLE Vehicles" + 
+             "(ID VARCHAR(6), " +  
+             "Model VARCHAR(30), " +
+             "Model Year INT(16), " +
+             "Seats INT(4), " +
+             "PRIMARY KEY (ID))";  
+        String passengerTableQuery= "CREATE TABLE Passenger" + 
+             "(ID INT(16), " +  
+             "Name VARCHAR(30), " +
+             "PRIMARY KEY (ID))";  
+        String tripsTableQuery= "CREATE TABLE Trips" + 
+             "(ID INT(16), " +  
+             "Driver ID INT(16), " +
+             "Passenger ID INT(16), " +
+             "Start VARCHAR(20)" +
+             "End VARCHAR(20)" +
+             "Fee INT(16), " +
+             "Rating INT(16), " +
+             "PRIMARY KEY (ID))";  
     try {
         // Class.forName(jdbcDriver);
         con = main.connectToOracle();           //returns con- login credentials
         statement = con.createStatement();
+
+        statement.executeUpdate(dropTableQuery);
         statement.executeUpdate(driverTableQuery);
-        System.out.println("Table Created");
+        System.out.println("Driver Table Created");
+        statement.executeUpdate(vehicleTableQuery);
+        System.out.println("Vehicle Table Created");
+        statement.executeUpdate(passengerTableQuery);
+        System.out.println("Passenger Table Created");
+        statement.executeUpdate(tripsTableQuery);
+        System.out.println("Trips Table Created");
     }
     
     catch (SQLException e ) {
@@ -47,7 +77,6 @@ class admin{
         Scanner menuAns = new Scanner(System.in);
         String answer;
 
-
     while(status == 0){
         System.out.println("Administrator, what would you like to do?");
         System.out.println("1. Create tables");
@@ -56,32 +85,28 @@ class admin{
         System.out.println("4. Check Data");
         System.out.println("5. Go back");
         System.out.print("Please enter [1-5].\n\n");
-        answer = menuAns.nextLine();
+    
 
         if(status==0){
-        switch(answer){
-             case "1":
-                status =1;
+            answer = menuAns.nextLine();
+            switch(answer){
+                case "1":
                     create();
                     break;
-            case "2":
-                    status =1;
+                 case "2":
+                     delete();
+                    break;
+                case "3":
                     load();
                     break;
-            case "3":
-                    status =1;
-                    delete();
-                    break;
-            case "4":
-                    status = 1;               
+                case "4":          
                     check();
                     break;
-            case "5":
+                case "5":
                     status = 1; 
                     System.out.println("back to main\n\n");
                     break;
-
-            default:
+                default:
                     System.out.print("[ERROR] Please enter [1-5]. \n");
             }
         }
@@ -111,11 +136,9 @@ public class main{
 		}
 		return con;
 	}
-
 	public static void main(String[] args) {
 		Scanner menuAns = new Scanner(System.in);
-		String answer;
-		System.out.println();
+        String answer;
         int flag=0;
         
 		while(true){
@@ -131,8 +154,10 @@ public class main{
 						System.out.println("2. A passenger");
 						System.out.println("3. A driver");
 						System.out.println("4. Exit this program");
-						System.out.print("Enter Your Choice: ");
-						answer = menuAns.nextLine();
+                        System.out.print("Enter Your Choice: ");
+                        
+                        if(flag==0){
+                        answer = menuAns.nextLine();            // error: No line found
 						
 						switch (answer) { 
 							case "1":
@@ -140,26 +165,22 @@ public class main{
 								//flag=1;
 								admin.initializeAdminPrompt();
 								break;
-
 							case "2":
                                 System.out.println("2. A passenger");
                                 //flag=1;
 								break;
-
 							case "3":
 								System.out.println("3. A driver");
 								//flag=1;
 								break;
-
 							case "4":
                                 flag=1;
                                 System.out.println("program exit.");
 								return;
-							
 							default:
-								System.out.println("Error!");
-							
-					}
+								System.out.println("Error!");	
+                        }
+                        }
 					}
 				}
 
