@@ -104,17 +104,16 @@ public class proj{
         //     //finally block used to close resources
         //     try{
         //        if(statement!=null)
-        //           con.close();
+        //           statement.close();
         //     }catch(SQLException se){
         //     }// do nothing
         //     try{
         //        if(con!=null)
-        //           con.close();
+        //           statement.close();
         //     }catch(SQLException se){
         //        se.printStackTrace();
         //     }
         // }//end finally try
-         
 
         }
 
@@ -130,7 +129,7 @@ public class proj{
     while(adminMenuStatus == 1){
         System.out.println("Administrator, what would you like to do?");
         System.out.println("1. Create tablesss");
-        System.out.println("2. Delete tables2");
+        System.out.println(" Delete tables2");
         System.out.println("3. Load data2");
         System.out.println("4. Check Data2");
         System.out.println("5. Go back");
@@ -196,10 +195,10 @@ public class proj{
 				}else{
 					while (flag==0){
 						System.out.println("Welcome! Who are you?");
-						System.out.println("1. An administrator1");
-						System.out.println("2. A passenger1");
-						System.out.println("3. A driver1");
-						System.out.println("4. Exit this program1");
+						System.out.println("1. An administrator");
+						System.out.println("2. A passenger");
+						System.out.println("3. A driver");
+						System.out.println("4. Exit this program");
                         System.out.print("Enter Your Choice: ");
                         
                         if(flag==0){
@@ -207,21 +206,21 @@ public class proj{
 						
 						switch (answer) { 
 							case "1":
-								System.out.println("1. An administrator1");
+								System.out.println("1. An administrator");
 								//flag=1;
-								admin.initializeAdminPrompt();
+								adminMenu(mySQLDB);
 								break;
 							case "2":
-                                System.out.println("2. A passenger1");
+                                System.out.println("2. A passenger");
                                 //flag=1;
 								break;
 							case "3":
-								System.out.println("3. A driver1");
+								System.out.println("3. A driver");
 								//flag=1;
 								break;
 							case "4":
                                 flag=1;
-                                System.out.println("program exit.1");
+                                System.out.println("program exit");
 								return;
 							default:
 								System.out.println("Error!");	
