@@ -4,18 +4,17 @@ import java.sql.*;
 import java.io.*;
 //import au.com.bytecode.opencsv.CSVReader;
 
-
-class admin{
-    static Connection con = null;
-    static Statement statement=null;
-
-    private static void create() {              //Create tables
+public class proj{
+        	// CHANGE START
+	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2633/db5";
+	public static String dbUsername = "Group5";
+	public static String dbPassword = "ride";
+    // CHANGE END
     
-        String dropTableQuery= "DROP TABLE IF EXISTS Driver;"; 
-        String dropTable1Query= "DROP TABLE IF EXISTS Vehicles;"; 
-        String dropTable2Query= "DROP TABLE IF EXISTS Passenger;"; 
-        String dropTable3Query= "DROP TABLE IF EXISTS Trips;"; 
-
+    private static void create(Connection mySQLDB) {              //Create tables
+    
+        delete(mySQLDB);
+    
         String driverTableQuery=  
             "CREATE TABLE Driver" + 
              "(id INT(16), " +  
@@ -43,24 +42,23 @@ class admin{
              "PRIMARY KEY (ID))";  
     try {
         // Class.forName(jdbcDriver);
-        con = main.connectToOracle();           //returns con- login credentials
-        statement = con.createStatement();
+        Statement statement = mySQLDB.createStatement();
 
-        statement.executeUpdate(dropTableQuery);
+       // statement.executeUpdate(dropTableQuery);
         statement.executeUpdate(driverTableQuery);
-        System.out.println("Driver Table Created");
+        System.out.println("Driver Table Created1");
 
-        statement.executeUpdate(dropTable1Query);
+        //statement.executeUpdate(dropTable1Query);
         statement.executeUpdate(vehicleTableQuery);
-        System.out.println("Vehicle Table Created");
+        System.out.println("Vehicle Table Created1");
 
-        statement.executeUpdate(dropTable2Query);
+     //   statement.executeUpdate(dropTable2Query);
         statement.executeUpdate(passengerTableQuery);
-        System.out.println("Passenger Table Created");
+        System.out.println("Passenger Table Created1");
 
-        statement.executeUpdate(dropTable3Query);
+       // statement.executeUpdate(dropTable3Query);
         statement.executeUpdate(tripsTableQuery);
-        System.out.println("Trips Table Created");
+        System.out.println("Trips Table Created1");
     }
     
     catch (SQLException e ) {
@@ -69,14 +67,11 @@ class admin{
     }
     }
 
-    private static void load(){
-
-        
+    private static void load(Connection mySQLDB){
         System.out.println("loaded!");
-        return;
     }
 
-    private static void delete(){
+    private static void delete(Connection mySQLDB){
 
         String dropDriver= "DROP TABLE IF EXISTS Driver;"; 
         String dropVehicles= "DROP TABLE IF EXISTS Vehicles;"; 
@@ -84,9 +79,7 @@ class admin{
         String dropTrips= "DROP TABLE IF EXISTS Trips;"; 
 
         try{
-            con = main.connectToOracle();           //returns con- login credentials
-            statement = con.createStatement();
-
+            Statement statement = mySQLDB.createStatement();
             statement.executeUpdate(dropDriver);
             System.out.println("Driver Table Deleted");
             statement.executeUpdate(dropVehicles);
@@ -97,94 +90,84 @@ class admin{
             System.out.println("Trips Table Deleted");
 
             System.out.println("All Tables Deleted");
+            statement.close();
         }
         catch(SQLException se){
             //Handle errors for JDBC
             se.printStackTrace();
          }
-         catch(Exception e){
-            //Handle errors for Class.forName
-            e.printStackTrace();
-         }
-         finally{
-            //finally block used to close resources
-            try{
-               if(statement!=null)
-                  con.close();
-            }catch(SQLException se){
-            }// do nothing
-            try{
-               if(con!=null)
-                  con.close();
-            }catch(SQLException se){
-               se.printStackTrace();
-            }
-        }//end finally try
+        //  catch(Exception e){
+        //     //Handle errors for Class.forName
+        //     e.printStackTrace();
+        //  }
+        //  finally{
+        //     //finally block used to close resources
+        //     try{
+        //        if(statement!=null)
+        //           con.close();
+        //     }catch(SQLException se){
+        //     }// do nothing
+        //     try{
+        //        if(con!=null)
+        //           con.close();
+        //     }catch(SQLException se){
+        //        se.printStackTrace();
+        //     }
+        // }//end finally try
          
 
         }
-        
-
-        
-
-        
-    
 
     private static void check(){
         System.out.println("checked");
         return;
     } 
     
-    public static void initializeAdminPrompt() {
-        int status = 0; 
-        Scanner menuAns = new Scanner(System.in);
-        String answer;
+    public static void adminMenu(Connection mySQLDB)throws SQLException {
+        int adminMenuStatus = 1; 
+        Scanner scan = new Scanner(System.in);
 
-    while(status == 0){
+    while(adminMenuStatus == 1){
         System.out.println("Administrator, what would you like to do?");
-        System.out.println("1. Create tables");
-        System.out.println("2. Delete tables");
-        System.out.println("3. Load data");
-        System.out.println("4. Check Data");
+        System.out.println("1. Create tablesss");
+        System.out.println("2. Delete tables2");
+        System.out.println("3. Load data2");
+        System.out.println("4. Check Data2");
         System.out.println("5. Go back");
-        System.out.print("Please enter [1-5].\n\n");
-    
-
-        if(status==0){
-            answer = menuAns.nextLine();
+        System.out.print("Please enter [1-5].\n");
+        String str = scan.nextLine();
+       try{
+        int answer = Integer.parseInt(str);
             switch(answer){
-                case "1":
-                    create();
+                case 1:
+                    create(mySQLDB);
                     break;
-                 case "2":
-                     delete();
+                 case 2:
+                     delete(mySQLDB);
                     break;
-                case "3":
-                    load();
+                case 3:
+                    load(mySQLDB);
                     break;
-                case "4":          
+                case 4:          
                     check();
+                    break;  
+                case 5:
+                    adminMenuStatus = 0; 
+                    System.out.println("back to main");
                     break;
-                case "5":
-                    status = 1; 
-                    System.out.println("back to main\n\n");
-                    return;
                 default:
-                    System.out.print("[ERROR] Please enter [1-5]. \n");
+                    System.out.print("[ERROR] Please enter [1-5].\n");
+                    break;
             }
         }
+        catch(NumberFormatException e){
+            System.out.printf("Invalid input. Enter only 0, 1, 2 or 3\n");
+        }
     }
-    menuAns.close();
+    scan.close();
     System.out.println("finished");
-    return;
     }
-}
-public class main{
-    	// CHANGE START
-	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2633/db5";
-	public static String dbUsername = "Group5";
-	public static String dbPassword = "ride";
-	// CHANGE END
+
 
 	public static Connection connectToOracle(){
 		Connection con = null;
@@ -199,7 +182,7 @@ public class main{
 		}
 		return con;
 	}
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SQLException{
 		Scanner menuAns = new Scanner(System.in);
         String answer;
         int flag=0;
@@ -213,10 +196,10 @@ public class main{
 				}else{
 					while (flag==0){
 						System.out.println("Welcome! Who are you?");
-						System.out.println("1. An administrator");
-						System.out.println("2. A passenger");
-						System.out.println("3. A driver");
-						System.out.println("4. Exit this program");
+						System.out.println("1. An administrator1");
+						System.out.println("2. A passenger1");
+						System.out.println("3. A driver1");
+						System.out.println("4. Exit this program1");
                         System.out.print("Enter Your Choice: ");
                         
                         if(flag==0){
@@ -224,21 +207,21 @@ public class main{
 						
 						switch (answer) { 
 							case "1":
-								System.out.println("1. An administrator");
+								System.out.println("1. An administrator1");
 								//flag=1;
 								admin.initializeAdminPrompt();
 								break;
 							case "2":
-                                System.out.println("2. A passenger");
+                                System.out.println("2. A passenger1");
                                 //flag=1;
 								break;
 							case "3":
-								System.out.println("3. A driver");
+								System.out.println("3. A driver1");
 								//flag=1;
 								break;
 							case "4":
                                 flag=1;
-                                System.out.println("program exit.");
+                                System.out.println("program exit.1");
 								return;
 							default:
 								System.out.println("Error!");	
