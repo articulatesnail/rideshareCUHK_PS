@@ -159,7 +159,8 @@ public class proj{
                         break;  
                     case 5:
                         adminMenuStatus = 0; 
-                        break;
+                        System.out.println("\n");
+                        return;
                     default:
                         System.out.print("[ERROR] Please enter [1-5].\n");
                         break;
