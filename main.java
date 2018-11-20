@@ -2,6 +2,8 @@
 import java.util.Scanner;
 import java.sql.*;
 import java.io.*;
+//import au.com.bytecode.opencsv.CSVReader;
+
 
 class admin{
     static Connection con = null;
@@ -10,28 +12,32 @@ class admin{
     private static void create() {              //Create tables
     
         String dropTableQuery= "DROP TABLE IF EXISTS Driver;"; 
+        String dropTable1Query= "DROP TABLE IF EXISTS Vehicles;"; 
+        String dropTable2Query= "DROP TABLE IF EXISTS Passenger;"; 
+        String dropTable3Query= "DROP TABLE IF EXISTS Trips;"; 
+
         String driverTableQuery=  
-            "CREATE TABLE Driver(" + 
-             "ID INT(16), " +  
+            "CREATE TABLE Driver" + 
+             "(id INT(16), " +  
              "Name VARCHAR(30), " +
-             "vID VARCHAR(6), " +
+             "vid VARCHAR(6), " +
              "PRIMARY KEY (ID));";  
         String vehicleTableQuery= "CREATE TABLE Vehicles" + 
-             "(ID VARCHAR(6), " +  
+             "(id VARCHAR(6), " +  
              "Model VARCHAR(30), " +
-             "Model Year INT(16), " +
+             "Model_Year INT(16), " +
              "Seats INT(4), " +
              "PRIMARY KEY (ID))";  
         String passengerTableQuery= "CREATE TABLE Passenger" + 
-             "(ID INT(16), " +  
+             "(id INT(16), " +  
              "Name VARCHAR(30), " +
              "PRIMARY KEY (ID))";  
         String tripsTableQuery= "CREATE TABLE Trips" + 
-             "(ID INT(16), " +  
-             "Driver ID INT(16), " +
-             "Passenger ID INT(16), " +
-             "Start VARCHAR(20)" +
-             "End VARCHAR(20)" +
+             "(id INT(16), " +  
+             "Driverid INT(16), " +
+             "Passengerid INT(16), " +
+             "Start VARCHAR(20)," +
+             "End VARCHAR(20)," +
              "Fee INT(16), " +
              "Rating INT(16), " +
              "PRIMARY KEY (ID))";  
@@ -43,10 +49,16 @@ class admin{
         statement.executeUpdate(dropTableQuery);
         statement.executeUpdate(driverTableQuery);
         System.out.println("Driver Table Created");
+
+        statement.executeUpdate(dropTable1Query);
         statement.executeUpdate(vehicleTableQuery);
         System.out.println("Vehicle Table Created");
+
+        statement.executeUpdate(dropTable2Query);
         statement.executeUpdate(passengerTableQuery);
         System.out.println("Passenger Table Created");
+
+        statement.executeUpdate(dropTable3Query);
         statement.executeUpdate(tripsTableQuery);
         System.out.println("Trips Table Created");
     }
@@ -58,14 +70,65 @@ class admin{
     }
 
     private static void load(){
+
+        
         System.out.println("loaded!");
         return;
     }
 
     private static void delete(){
-        System.out.println("deleted");
-        return;
-    }
+
+        String dropDriver= "DROP TABLE IF EXISTS Driver;"; 
+        String dropVehicles= "DROP TABLE IF EXISTS Vehicles;"; 
+        String dropPassenger= "DROP TABLE IF EXISTS Passenger;"; 
+        String dropTrips= "DROP TABLE IF EXISTS Trips;"; 
+
+        try{
+            con = main.connectToOracle();           //returns con- login credentials
+            statement = con.createStatement();
+
+            statement.executeUpdate(dropDriver);
+            System.out.println("Driver Table Deleted");
+            statement.executeUpdate(dropVehicles);
+            System.out.println("Vehicles Table Deleted");
+            statement.executeUpdate(dropPassenger);
+            System.out.println("Passengers Table Deleted");
+            statement.executeUpdate(dropTrips);
+            System.out.println("Trips Table Deleted");
+
+            System.out.println("All Tables Deleted");
+        }
+        catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+         }
+         catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+         }
+         finally{
+            //finally block used to close resources
+            try{
+               if(statement!=null)
+                  con.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+               if(con!=null)
+                  con.close();
+            }catch(SQLException se){
+               se.printStackTrace();
+            }
+        }//end finally try
+         
+
+        }
+        
+
+        
+
+        
+    
 
     private static void check(){
         System.out.println("checked");
@@ -105,7 +168,7 @@ class admin{
                 case "5":
                     status = 1; 
                     System.out.println("back to main\n\n");
-                    break;
+                    return;
                 default:
                     System.out.print("[ERROR] Please enter [1-5]. \n");
             }
