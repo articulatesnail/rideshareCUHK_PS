@@ -10,6 +10,33 @@ public class proj{
 	public static String dbUsername = "Group5";
 	public static String dbPassword = "ride";
     // CHANGE END
+   
+    public static void displayAll(Connection mySQLDB)throws SQLException { //drivers
+		try{
+			Statement stmt=mySQLDB.createStatement();
+			//query to display all records from table employee
+			String qD="Select * from Drivers";
+            // String qV="Select * from Vehicles";
+            // String qP="Select * from Passengers";
+            // String qT="Select * from Trips";
+			//to execute query
+			ResultSet rs=stmt.executeQuery(qD);
+			
+			//to print the resultset on console
+			if(rs.next()){ 
+				do{
+				System.out.println(rs.getString(1)+","+rs.getString(2)+","+rs.getString(3));
+				}while(rs.next());
+			}
+			else{
+				System.out.println("Record Not Found...");
+			}
+			stmt.close();
+		}
+		catch(Exception e){
+			System.out.println(e);
+		}
+	}
     
     private static void create(Connection mySQLDB)throws SQLException {              //Create tables
         delete(mySQLDB);
@@ -66,8 +93,42 @@ public class proj{
     }
 
     private static void load(Connection mySQLDB){
-        System.out.println("loaded!");
-    }
+
+        String addDrivers= "LOAD DATA LOCAL INFILE 'drivers.csv' INTO TABLE Drivers FIELDS TERMINATED BY ',' ;";
+        String addVehicles= "LOAD DATA LOCAL INFILE 'vehicles.csv' INTO TABLE Vehicles FIELDS TERMINATED BY ',' ;";
+        String addPassengers= "LOAD DATA LOCAL INFILE 'passengers.csv' INTO TABLE Passengers FIELDS TERMINATED BY ',' ;";
+        String addTrips= "LOAD DATA LOCAL INFILE 'trips.csv' INTO TABLE Trips FIELDS TERMINATED BY ',' ;";
+
+        try {
+            Statement statement = mySQLDB.createStatement();
+    
+           
+            statement.executeUpdate(addDrivers);
+            System.out.println("Driver Table Loaded");
+    
+            
+            statement.executeUpdate(addVehicles);
+            System.out.println("Vehicle Table Loaded");
+    
+         
+            statement.executeUpdate(addPassengers);
+            System.out.println("Passenger Table Loaded");
+    
+           
+            statement.executeUpdate(addTrips);
+            System.out.println("Trips Table Loaded");
+
+            System.out.println("loaded!");
+            statement.close();
+            }
+        
+            catch (SQLException e ) {
+            System.out.println("An error has occured on Table Loading");
+            e.printStackTrace();
+            }
+        }
+
+
 
     private static void delete(Connection mySQLDB){
 
@@ -135,6 +196,7 @@ public class proj{
 
         while(adminMenuStatus == 1){
             System.out.println("Administrator, what would you like to do?");
+            System.out.println("0. Display Driver");
             System.out.println("1. Create tables");
             System.out.println("2. Delete tables");
             System.out.println("3. Load data");
@@ -145,6 +207,9 @@ public class proj{
             try{
                 int answer = Integer.parseInt(str);
                 switch(answer){
+                    case 0:
+                        displayAll(mySQLDB);
+                        break;
                     case 1:
                         create(mySQLDB);
                         break;
