@@ -11,14 +11,14 @@ public class proj{
 	public static String dbPassword = "ride";
     // CHANGE END
    
-    public static void displayAll(Connection mySQLDB)throws SQLException { //drivers
+    public static void displayAll(Connection mySQLDB)throws SQLException { //prints all recordss
 		try{
 			Statement stmt=mySQLDB.createStatement();
 			//query to display all records from table employee
 			String qD="Select * from Drivers";
-            // String qV="Select * from Vehicles";
-            // String qP="Select * from Passengers";
-            // String qT="Select * from Trips";
+            String qV="Select * from Vehicles";
+            String qP="Select * from Passengers";
+            String qT="Select * from Trips";
 			//to execute query
 			ResultSet rs=stmt.executeQuery(qD);
 			
@@ -30,7 +30,38 @@ public class proj{
 			}
 			else{
 				System.out.println("Record Not Found...");
+            }
+            
+            rs=stmt.executeQuery(qV);
+
+            if(rs.next()){ 
+				do{
+				System.out.println(rs.getString(1)+","+rs.getString(2)+","+rs.getString(3)+","+rs.getString(4));
+				}while(rs.next());
 			}
+			else{
+				System.out.println("Record Not Found...");
+            }
+            rs=stmt.executeQuery(qP);
+            if(rs.next()){ 
+				do{
+				System.out.println(rs.getString(1)+","+rs.getString(2));
+				}while(rs.next());
+            }
+			else{
+				System.out.println("Record Not Found...");
+            }
+            rs=stmt.executeQuery(qT);
+            if(rs.next()){ 
+				do{
+				System.out.println(rs.getString(1)+","+rs.getString(2)+","+rs.getString(3)+","+rs.getString(4)+","+rs.getString(5)+","+rs.getString(6)+","+rs.getString(7));
+				}while(rs.next());
+			}
+			else{
+				System.out.println("Record Not Found...");
+            }
+            
+
 			stmt.close();
 		}
 		catch(Exception e){
@@ -154,24 +185,6 @@ public class proj{
             //Handle errors for JDBC
             se.printStackTrace();
          }
-        //  catch(Exception e){
-        //     //Handle errors for Class.forName
-        //     e.printStackTrace();
-        //  }
-        //  finally{
-        //     //finally block used to close resources
-        //     try{
-        //        if(statement!=null)
-        //           statement.close();
-        //     }catch(SQLException se){
-        //     }// do nothing
-        //     try{
-        //        if(con!=null)
-        //           statement.close();
-        //     }catch(SQLException se){
-        //        se.printStackTrace();
-        //     }
-        // }//end finally try
 
         }
 
@@ -224,10 +237,10 @@ public class proj{
                         break;  
                     case 5:
                         adminMenuStatus = 0; 
-                        System.out.println("\n");
+
                         return;
                     default:
-                        System.out.print("[ERROR] Please enter [1-5].\n");
+                        System.out.print("[ERROR] Please enter [1-5].");
                         break;
             }
         }
