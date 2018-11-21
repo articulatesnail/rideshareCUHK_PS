@@ -3,6 +3,8 @@ import java.util.Scanner;
 import java.sql.*;
 import java.io.*;
 import java.util.Date;
+import java.util.ArrayList;
+
 //import au.com.bytecode.opencsv.CSVReader;
 
 public class proj{
@@ -14,8 +16,8 @@ public class proj{
 
     public static void requestRide(Scanner scan, Connection mySQLDB)throws SQLException{
         int rID = requestCount++;
-
-        String availDrivers = "";
+        int earliestYear = -1;
+        String modelName="";
  
             System.out.println("Please enter your ID.");
             int passID =  Integer.parseInt(scan.nextLine()) ;     
@@ -23,8 +25,8 @@ public class proj{
                 Statement stmt = mySQLDB.createStatement();
                 ResultSet rs1 = stmt.executeQuery("SELECT * FROM Passengers WHERE id = " + passID);
                     if(rs1.next()) {
-                        ResultSet rs2 = stmt.executeQuery("SELECT * FROM Requests WHERE passenger_id = " + passID);
-                        if(rs2.next()){
+                        ResultSet matchVehicleRs = stmt.executeQuery("SELECT * FROM Requests WHERE passenger_id = " + passID);
+                        if(matchVehicleRs.next()){
                             System.out.println("You already have a pending request");
                             return;
                         }
@@ -37,10 +39,10 @@ public class proj{
             int noPassengers =  Integer.parseInt(scan.nextLine());              //on empty input  (enter), jumps back to main menu
 
         System.out.println("Please enter the earliest model year. (Press enter to skip)");
-            int earliestYear = Integer.parseInt(scan.nextLine());
+            earliestYear = Integer.parseInt(scan.nextLine());
 
         System.out.println("Please enter the model. (Press enter to skip)");   
-            String modelName = scan.nextLine();
+            modelName = scan.nextLine();
          //Check validity of inputs   
 
         try{
@@ -57,19 +59,68 @@ public class proj{
         preparedStmt.setBoolean(6, true);
         
         preparedStmt.execute();
-        System.out.print("Your request is placed.");
-        preparedStmt.close();
+        // System.out.print("Your request is placed.");
+        // preparedStmt.close();
         }
         
         catch (SQLException e ) {
         System.out.println("An error has occured on requestRide");
         e.printStackTrace();
         }
-        //see matching drivers/vehicles that are available
-        
-        //return available driver count
 
-        System.out.println(availDrivers + "____ drivers are able to take your request.");
+        //see matching drivers/vehicles that are available
+        try{
+            if (passID != -1 && noPassengers!= -1) {
+                Statement stmt2 = mySQLDB.createStatement();
+                String query = "SELECT id FROM Vehicles WHERE Seats >= " + 
+                                    String.valueOf(noPassengers);
+                                    
+                if(earliestYear != -1){
+                        query = query + " AND model_year >= " + String.valueOf(earliestYear);
+                    }
+                if(!modelName.equals("")){
+                        query = query + " AND model Like '%" + modelName +"%'";
+                    }
+                ResultSet matchVehicleRs = stmt2.executeQuery(query);
+
+                ArrayList<String> matchVehicleArr = new ArrayList<>();
+                if(!matchVehicleRs.isBeforeFirst()){
+                        System.out.println("No Such Vehicle Available");
+                }
+                else{
+                    String matchVechicleQuery = "";
+                    while(matchVehicleRs.next()){
+                            matchVehicleArr.add(matchVehicleRs.getString("id"));
+
+                        }
+                        for (int i =0 ; i < matchVehicleArr.size(); i++){
+                            if(i == 0){
+                                matchVechicleQuery = matchVechicleQuery + "('";
+                            }
+                                matchVechicleQuery = matchVechicleQuery + matchVehicleArr.get(i) +"', '";
+                            if (i == matchVehicleArr.size()-1){
+                                matchVechicleQuery = matchVechicleQuery.substring(0,matchVechicleQuery.length() - 3) + ")";
+                            }
+                        }
+                        String query2  = "SELECT * FROM Drivers WHERE vehicle_id IN" + matchVechicleQuery;
+                        Statement stmt3 = mySQLDB.createStatement();
+                        ResultSet rs3 = stmt3.executeQuery(query2);
+                        int count = 0;
+
+                        while (rs3.next()) {
+                            ++count;
+                        }
+                        System.out.println("Your request is placed. " +String.valueOf(count) + " drivers are able to take the request.");
+                    }
+
+                }
+
+             }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        //return available driver count
         
     }
 
@@ -167,27 +218,27 @@ public class proj{
         String driverTableQuery=  
             "CREATE TABLE Drivers" + 
              "(id INT(16), " +  
-             "Name VARCHAR(30), " +
-             "vid VARCHAR(6), " +
+             "name VARCHAR(30), " +
+             "vehicle_id VARCHAR(6), " +
              "PRIMARY KEY (id));";  
         String vehicleTableQuery= "CREATE TABLE Vehicles" + 
              "(id VARCHAR(6), " +  
-             "Model VARCHAR(30), " +
-             "Model_Year INT(16), " +
-             "Seats INT(4), " +
+             "model VARCHAR(30), " +
+             "model_year INT(16), " +
+             "seats INT(4), " +
              "PRIMARY KEY (id))";  
         String passengerTableQuery= "CREATE TABLE Passengers" + 
              "(id INT(16), " +  
-             "Name VARCHAR(30), " +
+             "name VARCHAR(30), " +
              "PRIMARY KEY (id))";  
         String tripsTableQuery= "CREATE TABLE Trips" + 
              "(id INT(16), " +  
-             "Driverid INT(16), " +
-             "Passengerid INT(16), " +
-             "Start VARCHAR(20)," +
-             "End VARCHAR(20)," +
-             "Fee INT(16), " +
-             "Rating INT(16), " +
+             "driver_id INT(16), " +
+             "passengerid INT(16), " +
+             "start VARCHAR(20)," +
+             "end VARCHAR(20)," +
+             "fee INT(16), " +
+             "rating INT(16), " +
              "PRIMARY KEY (id))";
         String requestsTableQuery=  
              "CREATE TABLE Requests" + 
@@ -256,17 +307,10 @@ public class proj{
             // System.out.printf("Please input a valid directory...");
             System.out.print("Processing...");
             
-            statement.executeUpdate(addDrivers);
-            //System.out.println("Driver Table Loaded");
-            
+            statement.executeUpdate(addDrivers);            
             statement.executeUpdate(addVehicles);
-            //System.out.println("Vehicle Table Loaded");
-         
             statement.executeUpdate(addPassengers);
-            //System.out.println("Passenger Table Loaded");
-    
             statement.executeUpdate(addTrips);
-            //System.out.println("Trips Table Loaded");
 
             System.out.print("Data is loaded!\n");
             statement.close();
@@ -489,6 +533,8 @@ public class proj{
 
                         if(mainMenu==0){
                             answer = scan.nextLine();
+                            create(mySQLDB);
+                            load(scan, mySQLDB);
                             
 						switch (answer) { 
 							case "1":
