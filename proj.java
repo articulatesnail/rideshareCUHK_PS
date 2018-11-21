@@ -2,6 +2,7 @@
 import java.util.Scanner;
 import java.sql.*;
 import java.io.*;
+import java.util.Date;
 //import au.com.bytecode.opencsv.CSVReader;
 
 public class proj{
@@ -13,17 +14,35 @@ public class proj{
 
     public static void requestRide(Scanner scan, Connection mySQLDB)throws SQLException{
         int rID = requestCount++;
-        String availDrivers = "";
 
-        System.out.println("Please enter your ID.");
-            int passID = scan.nextInt();
+        String availDrivers = "";
+ 
+            System.out.println("Please enter your ID.");
+            int passID =  Integer.parseInt(scan.nextLine()) ;     
+        try{         
+                Statement stmt = mySQLDB.createStatement();
+                ResultSet rs1 = stmt.executeQuery("SELECT * FROM Passengers WHERE id = " + passID);
+                    if(rs1.next()) {
+                        ResultSet rs2 = stmt.executeQuery("SELECT * FROM Requests WHERE passenger_id = " + passID);
+                        if(rs2.next()){
+                            System.out.println("You already have a pending request");
+                            return;
+                        }
+                    }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
         System.out.println("Please enter the number of passengers.");
-            int noPassengers = scan.nextInt();
+            int noPassengers =  Integer.parseInt(scan.nextLine());              //on empty input  (enter), jumps back to main menu
+
         System.out.println("Please enter the earliest model year. (Press enter to skip)");
-            int earliestYear = scan.nextInt();
-        System.out.println("Please enter the model. (Press enter to skip)");
+            int earliestYear = Integer.parseInt(scan.nextLine());
+
+        System.out.println("Please enter the model. (Press enter to skip)");   
             String modelName = scan.nextLine();
-        System.out.print("Your request is placed.");
+         //Check validity of inputs   
+
         try{
         //Update requests table
         String insertQuery = "INSERT INTO Requests (id, passenger_id, model_year, model, passengers, taken)"
@@ -38,6 +57,7 @@ public class proj{
         preparedStmt.setBoolean(6, true);
         
         preparedStmt.execute();
+        System.out.print("Your request is placed.");
         preparedStmt.close();
         }
         
@@ -50,7 +70,7 @@ public class proj{
         //return available driver count
 
         System.out.println(availDrivers + "____ drivers are able to take your request.");
-
+        
     }
 
     public static void checkTrip(Connection mySQLDB)throws SQLException{
@@ -382,7 +402,7 @@ public class proj{
                         passMenuStatus = 0; 
                         return;
                     default:
-                        System.out.print("[ERROR] Please enter [1-4].");
+                        System.out.println("[ERROR] Please enter [1-4].");
                         break;
             }
         }
