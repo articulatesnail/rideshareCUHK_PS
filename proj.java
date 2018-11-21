@@ -5,12 +5,23 @@ import java.io.*;
 //import au.com.bytecode.opencsv.CSVReader;
 
 public class proj{
-        	// CHANGE START
+    // CHANGE START
 	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2633/db5";
 	public static String dbUsername = "Group5";
 	public static String dbPassword = "ride";
     // CHANGE END
    
+
+    public static void requestRide(Connection mySQLDB)throws SQLException{
+
+    }
+    public static void checkTrip(Connection mySQLDB)throws SQLException{
+
+    }
+    public static void rateTrip(Scanner scan, Connection mySQLDB)throws SQLException{
+
+    }
+
     public static void displayAll(Connection mySQLDB)throws SQLException { //prints all recordss
 		try{
 			Statement stmt=mySQLDB.createStatement();
@@ -121,29 +132,47 @@ public class proj{
         }
     }
 
-    private static void load(Connection mySQLDB)throws SQLException{
+    private static void load(Scanner scan, Connection mySQLDB) throws SQLException{
 
-        String addDrivers= "LOAD DATA LOCAL INFILE 'drivers.csv' INTO TABLE Drivers FIELDS TERMINATED BY ',' ;";
-        String addVehicles= "LOAD DATA LOCAL INFILE 'vehicles.csv' INTO TABLE Vehicles FIELDS TERMINATED BY ',' ;";
-        String addPassengers= "LOAD DATA LOCAL INFILE 'passengers.csv' INTO TABLE Passengers FIELDS TERMINATED BY ',' ;";
-        String addTrips= "LOAD DATA LOCAL INFILE 'trips.csv' INTO TABLE Trips FIELDS TERMINATED BY ',' ;";
+        // while(true){
+        //     String filePath = "";
 
-        try {
+        //     System.out.print("Please enter the folder path.");
+        //     filePath = scan.nextLine();
+		// 	if((new File(filePath)).isDirectory()) 
+		// 		break;
+        //     else 
+		// 		System.out.printf("Please input a valid directory...");
+		//     }
+        try{
             Statement statement = mySQLDB.createStatement();
-           
+            
+            // String addDrivers= "LOAD DATA LOCAL INFILE "+  filePath + "/drivers.csv' INTO TABLE Drivers FIELDS TERMINATED BY ',' ;";
+            // String addVehicles= "LOAD DATA LOCAL INFILE "+ filePath + "/vehicles.csv' INTO TABLE Vehicles FIELDS TERMINATED BY ',' ;";
+            // String addPassengers= "LOAD DATA LOCAL INFILE "+  filePath + " /passengers.csv' INTO TABLE Passengers FIELDS TERMINATED BY ',' ;";
+            // String addTrips= "LOAD DATA LOCAL INFILE "+  filePath + " /trips.csv' INTO TABLE Trips FIELDS TERMINATED BY ',' ;";
+
+            String addDrivers= "LOAD DATA LOCAL INFILE 'drivers.csv' INTO TABLE Drivers FIELDS TERMINATED BY ',' ;";
+            String addVehicles= "LOAD DATA LOCAL INFILE 'vehicles.csv' INTO TABLE Vehicles FIELDS TERMINATED BY ',' ;";
+            String addPassengers= "LOAD DATA LOCAL INFILE 'passengers.csv' INTO TABLE Passengers FIELDS TERMINATED BY ',' ;";
+            String addTrips= "LOAD DATA LOCAL INFILE 'trips.csv' INTO TABLE Trips FIELDS TERMINATED BY ',' ;";
+
+            // System.out.printf("Please input a valid directory...");
+            System.out.print("Processing...");
+            
             statement.executeUpdate(addDrivers);
-            System.out.println("Driver Table Loaded");
+            //System.out.println("Driver Table Loaded");
             
             statement.executeUpdate(addVehicles);
-            System.out.println("Vehicle Table Loaded");
+            //System.out.println("Vehicle Table Loaded");
          
             statement.executeUpdate(addPassengers);
-            System.out.println("Passenger Table Loaded");
+            //System.out.println("Passenger Table Loaded");
     
             statement.executeUpdate(addTrips);
-            System.out.println("Trips Table Loaded");
+            //System.out.println("Trips Table Loaded");
 
-            System.out.println("loaded!");
+            System.out.print("Data is loaded!\n");
             statement.close();
             }
         
@@ -186,7 +215,7 @@ public class proj{
         System.out.println("Number of records in each table:");
             for (int i = 0; i < 4; i++){
                 Statement stmt  = mySQLDB.createStatement();
-                ResultSet rs = stmt.executeQuery("select count(*) from "+table_name[i]);
+                ResultSet rs = stmt.executeQuery("select count(*) from "+table_name[i]);   //add if table exists
     
                 rs.next();
                 System.out.println(table_name[i]+": "+rs.getString(1));
@@ -222,7 +251,7 @@ public class proj{
                         delete(mySQLDB);
                         break;
                     case 3:
-                        load(mySQLDB);
+                        load(scan, mySQLDB);
                         break;
                     case 4:          
                         check(scan, mySQLDB);
@@ -259,13 +288,13 @@ public class proj{
                 int answer = Integer.parseInt(str);
                 switch(answer){
                     case 1:
-                        create(mySQLDB);
+                        requestRide(mySQLDB);
                         break;
                     case 2:
-                        delete(mySQLDB);
+                        checkTrip(mySQLDB);
                         break;
                     case 3:
-                        load(mySQLDB);
+                        rateTrip(scan, mySQLDB);
                         break;
                     case 4:
                         passMenuStatus = 0; 
@@ -305,7 +334,7 @@ public class proj{
                         delete(mySQLDB);
                         break;
                     case 3:
-                        load(mySQLDB);
+                        load(scan, mySQLDB);
                         break;
                     case 4:
                         driverMenuStatus = 0; 
