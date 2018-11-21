@@ -5,22 +5,86 @@ import java.io.*;
 //import au.com.bytecode.opencsv.CSVReader;
 
 public class proj{
-    // CHANGE START
+
 	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2633/db5";
 	public static String dbUsername = "Group5";
 	public static String dbPassword = "ride";
-    // CHANGE END
-   
+    static int requestCount = 0;
 
-    public static void requestRide(Connection mySQLDB)throws SQLException{
+    public static void requestRide(Scanner scan, Connection mySQLDB)throws SQLException{
+        int rID = requestCount++;
+        String availDrivers = "";
+
+        System.out.println("Please enter your ID.");
+            int passID = scan.nextInt();
+        System.out.println("Please enter the number of passengers.");
+            int noPassengers = scan.nextInt();
+        System.out.println("Please enter the earliest model year. (Press enter to skip)");
+            int earliestYear = scan.nextInt();
+        System.out.println("Please enter the model. (Press enter to skip)");
+            String modelName = scan.nextLine();
+        System.out.print("Your request is placed.");
+        try{
+        //Update requests table
+        String insertQuery = "INSERT INTO Requests (id, passenger_id, model_year, model, passengers, taken)"
+                            + " values (?, ?, ?, ?, ?, ?)";
+        PreparedStatement preparedStmt = mySQLDB.prepareStatement(insertQuery);
+
+        preparedStmt.setInt    (1, rID);
+        preparedStmt.setInt    (2, passID); // get passengerid from passengers
+        preparedStmt.setInt    (3, earliestYear);
+        preparedStmt.setString (4, modelName);
+        preparedStmt.setInt    (5, noPassengers);
+        preparedStmt.setBoolean(6, true);
+        
+        preparedStmt.execute();
+        preparedStmt.close();
+        }
+        
+        catch (SQLException e ) {
+        System.out.println("An error has occured on requestRide");
+        e.printStackTrace();
+        }
+        //see matching drivers/vehicles that are available
+        
+        //return available driver count
+
+        System.out.println(availDrivers + "____ drivers are able to take your request.");
 
     }
+
     public static void checkTrip(Connection mySQLDB)throws SQLException{
 
     }
+
     public static void rateTrip(Scanner scan, Connection mySQLDB)throws SQLException{
 
     }
+
+    public static void displayRequests(Connection mySQLDB)throws SQLException { //prints requests records
+		try{
+			Statement stmt=mySQLDB.createStatement();
+
+			String qR="Select * from Requests";
+        
+			//to execute query
+			ResultSet rs=stmt.executeQuery(qR);
+			
+			//to print the resultset on console
+			if(rs.next()){ 
+				do{
+                    System.out.println(rs.getString(1)+","+rs.getString(2)+","+rs.getString(3)+","+rs.getString(4)+","+rs.getString(5)+","+rs.getString(6));
+				}while(rs.next());
+			}
+			else{
+				System.out.println("Record Not Found...");
+            }   
+			stmt.close();
+		}
+		catch(Exception e){
+			System.out.println(e);
+		}
+	}
 
     public static void displayAll(Connection mySQLDB)throws SQLException { //prints all recordss
 		try{
@@ -85,17 +149,17 @@ public class proj{
              "(id INT(16), " +  
              "Name VARCHAR(30), " +
              "vid VARCHAR(6), " +
-             "PRIMARY KEY (ID));";  
+             "PRIMARY KEY (id));";  
         String vehicleTableQuery= "CREATE TABLE Vehicles" + 
              "(id VARCHAR(6), " +  
              "Model VARCHAR(30), " +
              "Model_Year INT(16), " +
              "Seats INT(4), " +
-             "PRIMARY KEY (ID))";  
+             "PRIMARY KEY (id))";  
         String passengerTableQuery= "CREATE TABLE Passengers" + 
              "(id INT(16), " +  
              "Name VARCHAR(30), " +
-             "PRIMARY KEY (ID))";  
+             "PRIMARY KEY (id))";  
         String tripsTableQuery= "CREATE TABLE Trips" + 
              "(id INT(16), " +  
              "Driverid INT(16), " +
@@ -104,9 +168,19 @@ public class proj{
              "End VARCHAR(20)," +
              "Fee INT(16), " +
              "Rating INT(16), " +
-             "PRIMARY KEY (ID))";  
+             "PRIMARY KEY (id))";
+        String requestsTableQuery=  
+             "CREATE TABLE Requests" + 
+              "(id INT(16), " +  
+              "passenger_id INT(32), " +
+              "model_year INT(4), " +
+              "model VARCHAR(32), " +
+              "passengers INT(8), " +
+              "taken BOOLEAN, " +
+              "PRIMARY KEY (id));";         
         try {
         Statement statement = mySQLDB.createStatement();
+        System.out.print("Processing...");
 
        // statement.executeUpdate(dropTableQuery);
         statement.executeUpdate(driverTableQuery);
@@ -122,7 +196,9 @@ public class proj{
 
        // statement.executeUpdate(dropTable3Query);
         statement.executeUpdate(tripsTableQuery);
-        System.out.println("Tables Created");
+        statement.executeUpdate(requestsTableQuery);
+
+        System.out.println("Done! Tables are created!");
         statement.close();
         }
     
@@ -183,11 +259,11 @@ public class proj{
     }
 
     private static void delete(Connection mySQLDB)throws SQLException{
-
         String dropDriver= "DROP TABLE IF EXISTS Drivers;"; 
         String dropVehicles= "DROP TABLE IF EXISTS Vehicles;"; 
         String dropPassenger= "DROP TABLE IF EXISTS Passengers;"; 
-        String dropTrips= "DROP TABLE IF EXISTS Trips;"; 
+        String dropTrips= "DROP TABLE IF EXISTS Trips;";
+        String dropRequests= "DROP TABLE IF EXISTS Requests;"; 
 
         try{
             Statement statement = mySQLDB.createStatement();
@@ -198,7 +274,8 @@ public class proj{
             statement.executeUpdate(dropPassenger);
             //System.out.println("Passengers Table Deleted");
             statement.executeUpdate(dropTrips);
-            //System.out.println("Trips Table Deleted");
+            //System.out.println("Trips Table Deleted")
+            statement.executeUpdate(dropRequests);
             System.out.println("All Tables Deleted");
             statement.close();
         }
@@ -229,21 +306,20 @@ public class proj{
         Scanner scan = new Scanner(System.in);
 
         while(adminMenuStatus == 1){
-            System.out.println("Passenger, what would you like to do?");
-            System.out.println("0. Display Driver");
+            System.out.println("Administrator, what would you like to do?");
             System.out.println("1. Create tables");
             System.out.println("2. Delete tables");
             System.out.println("3. Load data");
             System.out.println("4. Check Data");
             System.out.println("5. Go back");
+            System.out.println("6. Display provided tables");
+            System.out.println("7. Display Requests table");
             System.out.println("Please enter [1-5].");
             String str = scan.nextLine();
             try{
                 int answer = Integer.parseInt(str);
                 switch(answer){
-                    case 0:
-                        displayAll(mySQLDB);
-                        break;
+
                     case 1:
                         create(mySQLDB);
                         break;
@@ -259,6 +335,12 @@ public class proj{
                     case 5:
                         adminMenuStatus = 0; 
                         return;
+                    case 6:
+                        displayAll(mySQLDB);
+                        break;
+                    case 7:
+                        displayRequests(mySQLDB);
+                        break;
                     default:
                         System.out.print("[ERROR] Please enter [1-5].");
                         break;
@@ -288,7 +370,7 @@ public class proj{
                 int answer = Integer.parseInt(str);
                 switch(answer){
                     case 1:
-                        requestRide(mySQLDB);
+                        requestRide(scan, mySQLDB);
                         break;
                     case 2:
                         checkTrip(mySQLDB);
@@ -400,7 +482,6 @@ public class proj{
                                 break;
 							case "4":
                                 mainMenu = 0;
-                                System.out.println("program exit");
                                 return;
                             default:
                                 System.out.println("[ERROR] Please enter [1-5].\n");
