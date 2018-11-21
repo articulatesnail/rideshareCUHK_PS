@@ -60,8 +60,6 @@ public class proj{
 			else{
 				System.out.println("Record Not Found...");
             }
-            
-
 			stmt.close();
 		}
 		catch(Exception e){
@@ -123,7 +121,7 @@ public class proj{
         }
     }
 
-    private static void load(Connection mySQLDB){
+    private static void load(Connection mySQLDB)throws SQLException{
 
         String addDrivers= "LOAD DATA LOCAL INFILE 'drivers.csv' INTO TABLE Drivers FIELDS TERMINATED BY ',' ;";
         String addVehicles= "LOAD DATA LOCAL INFILE 'vehicles.csv' INTO TABLE Vehicles FIELDS TERMINATED BY ',' ;";
@@ -132,20 +130,16 @@ public class proj{
 
         try {
             Statement statement = mySQLDB.createStatement();
-    
            
             statement.executeUpdate(addDrivers);
             System.out.println("Driver Table Loaded");
-    
             
             statement.executeUpdate(addVehicles);
             System.out.println("Vehicle Table Loaded");
-    
          
             statement.executeUpdate(addPassengers);
             System.out.println("Passenger Table Loaded");
     
-           
             statement.executeUpdate(addTrips);
             System.out.println("Trips Table Loaded");
 
@@ -157,11 +151,9 @@ public class proj{
             System.out.println("An error has occured on Table Loading");
             e.printStackTrace();
             }
-        }
+    }
 
-
-
-    private static void delete(Connection mySQLDB){
+    private static void delete(Connection mySQLDB)throws SQLException{
 
         String dropDriver= "DROP TABLE IF EXISTS Drivers;"; 
         String dropVehicles= "DROP TABLE IF EXISTS Vehicles;"; 
@@ -186,7 +178,7 @@ public class proj{
             se.printStackTrace();
          }
 
-        }
+    }
 
     public static void check(Scanner scan, Connection mySQLDB) throws SQLException{
         String[] table_name = {"Drivers", "Vehicles", "Passengers", "Trips"};
@@ -208,7 +200,7 @@ public class proj{
         Scanner scan = new Scanner(System.in);
 
         while(adminMenuStatus == 1){
-            System.out.println("Administrator, what would you like to do?");
+            System.out.println("Passenger, what would you like to do?");
             System.out.println("0. Display Driver");
             System.out.println("1. Create tables");
             System.out.println("2. Delete tables");
@@ -237,7 +229,6 @@ public class proj{
                         break;  
                     case 5:
                         adminMenuStatus = 0; 
-
                         return;
                     default:
                         System.out.print("[ERROR] Please enter [1-5].");
@@ -245,11 +236,91 @@ public class proj{
             }
         }
         catch(NumberFormatException e){
-            System.out.printf("Invalid input. Enter only 0, 1, 2 or 3\n");
+            System.out.println("[ERROR] Please enter [1-5].\n");
         }
+        }
+        scan.close();
+        return;
     }
-    scan.close();
-    return;
+
+    public static void passMenu(Connection mySQLDB)throws SQLException {
+        int passMenuStatus = 1; 
+        Scanner scan = new Scanner(System.in);
+
+        while(passMenuStatus == 1){
+            System.out.println("Passenger, what would you like to do?");
+            System.out.println("1. Request a ride");
+            System.out.println("2. Check trip records");
+            System.out.println("3. Rate a trip");
+            System.out.println("4. Go back");
+            System.out.println("Please enter [1-4].");
+            String str = scan.nextLine();
+            try{
+                int answer = Integer.parseInt(str);
+                switch(answer){
+                    case 1:
+                        create(mySQLDB);
+                        break;
+                    case 2:
+                        delete(mySQLDB);
+                        break;
+                    case 3:
+                        load(mySQLDB);
+                        break;
+                    case 4:
+                        passMenuStatus = 0; 
+                        return;
+                    default:
+                        System.out.print("[ERROR] Please enter [1-4].");
+                        break;
+            }
+        }
+        catch(NumberFormatException e){
+            System.out.println("[ERROR] Please enter [1-4].\n");
+        }
+        }
+        scan.close();
+        return;
+    }
+
+    public static void driverMenu(Connection mySQLDB)throws SQLException {
+        int driverMenuStatus = 1; 
+        Scanner scan = new Scanner(System.in);
+
+        while(driverMenuStatus == 1){
+            System.out.println("Driver, what would you like to do?");
+            System.out.println("1. Take a request");
+            System.out.println("2. Finish a trip");
+            System.out.println("3. Check driver rating");
+            System.out.println("4. Go back");
+            System.out.println("Please enter [1-4].");
+            String str = scan.nextLine();
+            try{
+                int answer = Integer.parseInt(str);
+                switch(answer){
+                    case 1:
+                        create(mySQLDB);
+                        break;
+                    case 2:
+                        delete(mySQLDB);
+                        break;
+                    case 3:
+                        load(mySQLDB);
+                        break;
+                    case 4:
+                        driverMenuStatus = 0; 
+                        return;
+                    default:
+                        System.out.print("[ERROR] Please enter [1-4].");
+                        break;
+            }
+        }
+        catch(NumberFormatException e){
+            System.out.println("[ERROR] Please enter [1-4].\n");
+        }
+        }
+        scan.close();
+        return;
     }
 
 	public static Connection connectToOracle(){
@@ -290,15 +361,14 @@ public class proj{
                             
 						switch (answer) { 
 							case "1":
-								System.out.println("1. An administrator");
 								adminMenu(mySQLDB);
 								break;
 							case "2":
-                                System.out.println("2. A passenger");
+                                passMenu(mySQLDB);
 								break;
 							case "3":
-								System.out.println("3. A driver");
-								break;
+                                driverMenu(mySQLDB);
+                                break;
 							case "4":
                                 mainMenu = 0;
                                 System.out.println("program exit");
