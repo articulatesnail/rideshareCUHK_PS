@@ -673,7 +673,7 @@ public class proj{
 	public static void main(String[] args) {
 		Scanner scan = new Scanner(System.in);
         String answer;
-        int mainMenu = 0;
+        int mainMenu = 1;
 
         while(true){
 			try{
@@ -682,7 +682,7 @@ public class proj{
 					answer = "0";
 					System.out.println("[Error]: Database connection failed, system exit");
                 }else{
-                    while (mainMenu == 0){
+                    while (mainMenu == 1){
                     System.out.println("Welcome! Who are you?");
                     System.out.println("1. An administrator");
                     System.out.println("2. A passenger");
@@ -690,11 +690,10 @@ public class proj{
                     System.out.println("4. Exit this program");
                     System.out.println("Enter Your Choice: ");
 
-                        if(mainMenu==0){
+                        if(mainMenu==1){
                             answer = scan.nextLine();
-                            create(mySQLDB);
+                            create(mySQLDB);                //just so no errors if right to passenger. DELETE LATER
                             load(scan, mySQLDB);
-                            
 						switch (answer) { 
 							case "1":
 								adminMenu(mySQLDB);
@@ -707,14 +706,14 @@ public class proj{
                                 break;
 							case "4":
                                 mainMenu = 0;
-                                return;
+                                break;
                             default:
                                 System.out.println("[ERROR] Please enter [1-5].\n");
                         }
+                        }
                     }
+                    break;
                 }
-                }
-                break;
             }catch (Exception e){
 				System.out.print("[Error]: ");
 				System.out.println(e.getMessage());
