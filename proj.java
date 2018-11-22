@@ -22,16 +22,18 @@ public class proj{
         int earliestYear = -1;
         String modelName="";
         
-            System.out.println("Please enter your ID.");
-            int passID =  Integer.parseInt(scan.nextLine()) ;     
+
+        System.out.println("Please enter your ID.");
+        int passID =  Integer.parseInt(scan.nextLine()) ;    
+ 
         try{         
-                Statement stmt = mySQLDB.createStatement();
-                ResultSet rs1 = stmt.executeQuery("SELECT * FROM Passengers WHERE id = " + passID);
-                    if(rs1.next()) {
-                        ResultSet matchVehicleRs = stmt.executeQuery("SELECT * FROM Requests WHERE passenger_id = " + passID);
-                        if(matchVehicleRs.next()){
-                            System.out.println("You already have a pending request");
-                            return;
+            Statement stmt = mySQLDB.createStatement();
+           ResultSet rs1 = stmt.executeQuery("SELECT * FROM Passengers WHERE id = " + passID);
+            if(rs1.next()) {
+                ResultSet matchVehicleRs = stmt.executeQuery("SELECT * FROM Requests WHERE passenger_id = " + passID);
+                if(matchVehicleRs.next()){
+                    System.out.println("You already have a pending request");
+                    return;
                         }
                     }
             } catch (SQLException e) {
@@ -39,14 +41,22 @@ public class proj{
             }
 
         System.out.println("Please enter the number of passengers.");
-            int noPassengers =  Integer.parseInt(scan.nextLine());              //on empty input  (enter), jumps back to main menu
+            int noPassengers =  Integer.parseInt(scan.nextLine());        
 
         System.out.println("Please enter the earliest model year. (Press enter to skip)");
-            earliestYear = Integer.parseInt(scan.nextLine());
-
+            String tempEY= scan.nextLine();
+            if(tempEY.isEmpty()){ 
+                earliestYear = 0;
+            }
+            else{
+                earliestYear = Integer.parseInt(tempEY);
+            }
+            
         System.out.println("Please enter the model. (Press enter to skip)");   
             modelName = scan.nextLine();
          //Check validity of inputs   
+        
+
 
         try{
         //Update requests table
@@ -94,7 +104,6 @@ public class proj{
                     String matchVechicleQuery = "";
                     while(matchVehicleRs.next()){
                             matchVehicleArr.add(matchVehicleRs.getString("id"));
-
                         }
                         for (int i =0 ; i < matchVehicleArr.size(); i++){
                             if(i == 0){
@@ -117,15 +126,14 @@ public class proj{
                     }
 
                 }
-
-             }
+            }
             catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
 
         //return available driver count
         
-    }
 
     public static void passCheckTrip(Connection mySQLDB)throws SQLException{
 
@@ -152,7 +160,7 @@ public class proj{
                                 return;
                                 }
                             else{
-            
+
                                 try{
                                     String query1="CREATE OR REPLACE VIEW temp1 AS "+
                                                   " SELECT * FROM Requests "+
