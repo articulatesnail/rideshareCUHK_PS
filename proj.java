@@ -143,6 +143,7 @@ public class proj{
         }catch (SQLException e) {
             e.printStackTrace();
         }
+
         //enter start date no error handle for now
         String startDateInput = null;
 
@@ -170,50 +171,120 @@ public class proj{
         System.out.println("Please enter the end date.");
         if(scan.hasNext()){
             endDateInput = scan.nextLine();
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-mm-dd");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
             dateFormatter.setLenient(false);
             Date parsedEndDate = null;
             try {
                 parsedEndDate = dateFormatter.parse(endDateInput);
             } catch (ParseException e) {
-                System.out.println("[ERROR]: Incorrect date format. [yyyy-mm-dd] ");
+                System.out.println("[ERROR]: Incorrect date format. [yyyy-MM-dd] ");
                 passCheckTrip(scan, mySQLDB);
             }
+
         }
         else{
             System.out.println("[ERROR]: End date input");
             passCheckTrip(scan, mySQLDB);
         }
         // query based on inputs
-        try {
+        try {           
             Statement stmt1 = mySQLDB.createStatement();
             String query1= "SELECT * FROM Trips WHERE passenger_id = " 
                             + String.valueOf(passID) 
                             + " AND start >= " + startDateInput 
                             + " AND end <= "+ endDateInput ;
-            ResultSet rs = stmt1.executeQuery(query1);
+            ResultSet rs = stmt1.executeQuery(query1);   //rs: table showing all past trips of passenger
             System.out.println("Trip ID, Driver Name, Vehicle ID, Vehicle model, Start, End, Fee, Rating");
-            
-            while(rs.next()) {
-                System.out.print(rs.getInt("id")+ ", ");
-                Statement stmt2 = mySQLDB.createStatement();
-                ResultSet rs2 = stmt2.executeQuery("SELECT * FROM Drivers WHERE id =" + String.valueOf(rs.getInt("driver_id")));
-                while (rs2.next()){
-                    System.out.print(rs2.getString("name") + ", ");
-                    System.out.print(rs2.getString("vehicle_id") + ", ");
+            if(rs.next() == true){
+                while(rs.next()) {
+                    System.out.print(rs.getInt("id")+ ", ");
+                    // Statement stmt2 = mySQLDB.createStatement();
+                    String query2= "SELECT * FROM Drivers  WHERE id =" + String.valueOf(rs.getInt("driver_id")) ;
+                    PreparedStatement preparedStmt2 = mySQLDB.prepareStatement(query2);
+                    // ResultSet rs2 = stmt2.executeQuery(); //rs2 table showing all trips tha 
+                    ResultSet rs2 = preparedStmt2.executeQuery(); //rs2 table showing all trips tha 
+                    while (rs2.next()){
+                        System.out.print(rs2.getString("name") + ", ");
+                        System.out.print(rs2.getString("vehicle_id") + ", ");
+                    }
+                    System.out.print(rs.getString("start") + ", ");
+                    System.out.print(rs.getString("end") + ", ");
+                    System.out.println(rs.getString("rating"));
                 }
-                System.out.print(rs.getString("start") + ", ");
-                System.out.print(rs.getString("end") + ", ");
-                System.out.println(rs.getString("rating"));
+            }
+            else{
+                System.out.println("No matching trips.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
     }
 
     public static void passRateTrip(Scanner scan, Connection mySQLDB)throws SQLException{
 
-    }
+        System.out.println("Please enter your ID.");
+        int passID =  Integer.parseInt(scan.nextLine()) ;    
+        try{         
+            Statement stmt1 = mySQLDB.createStatement();
+            ResultSet rs1 = stmt1.executeQuery("SELECT * FROM Passengers WHERE id = " + passID);
+            if(rs1.next()==false) {
+                System.out.println("Passenger ID doesn't exist in table") ;
+                stmt1.close();
+                passRateTrip(scan, mySQLDB);      
+            }
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Please enter the trip ID.");
+        int tripID =  Integer.parseInt(scan.nextLine()) ;    
+    
+        try{         
+            Statement stmt2 = mySQLDB.createStatement();
+            ResultSet rs2= stmt2.executeQuery("SELECT * FROM Trips WHERE id = " + tripID 
+                                              +" AND passenger_id =" + passID
+                                              +" AND end IS NOT NULL");
+            if(rs2.next()==false) {
+                System.out.println("Trip ID invalid. Your completed trip ID not found.") ;
+                stmt2.close();
+                passRateTrip(scan, mySQLDB);      
+            }
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Please enter the rating.");
+        int rating =  Integer.parseInt(scan.nextLine()); 
+        
+        try{
+            //Update rating in Trips table
+            String insertQuery = "UPDATE Trips SET rating =" + rating 
+                                +" WHERE id = " + tripID;
+            PreparedStatement preparedStmt = mySQLDB.prepareStatement(insertQuery);
+    
+            preparedStmt.execute();
+            preparedStmt.close();
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        try{
+            String qT = "SELECT * FROM Trips WHERE id =" + tripID;
+            Statement stmt3 = mySQLDB.createStatement();
+            ResultSet rs3=stmt3.executeQuery(qT);
+            System.out.println("Trip ID, Driver Name, Vehicle ID, Vehicle model, Start, End, Fee, Rating");
+            if(rs3.next()){ 
+				System.out.println(rs3.getString(1)+","+rs3.getString(2)+","+rs3.getString(3)+","+rs3.getString(4)+","+rs3.getString(5)+","+rs3.getString(6)+","+rs3.getString(7));
+            }
+            stmt3.close();
+        }    
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        }
+    
     //////////////////////////////////////////////////////////////////////////////////////// Start of Driver methods
    
     public static void driverTakeRide(Scanner scan, Connection mySQLDB)throws SQLException{
@@ -226,7 +297,7 @@ public class proj{
             if(rs0.next()) {                                                            //if result set has a value (driver_id exists), then proceed
                 try{         
                     Statement stmt = mySQLDB.createStatement();
-                    ResultSet rs1 = stmt.executeQuery("SELECT * FROM Trips WHERE driver_id = " + dID + "AND end = NULL");
+                    ResultSet rs1 = stmt.executeQuery("SELECT * FROM Trips WHERE driver_id = " + dID + "AND end IS NULL");
                             if(rs1.next()) {
                                 System.out.println("You already have an unfinished trip");
                                 return;
