@@ -150,14 +150,14 @@ public class proj{
         System.out.println("Please enter the start date.");
         if(scan.hasNext()){
             startDateInput = scan.nextLine();
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-mm-dd");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
             dateFormatter.setLenient(false);
             Date parsedStartDate = null;
             try {
                 parsedStartDate = dateFormatter.parse(startDateInput);
 
             } catch (ParseException e) {
-                System.out.println("[ERROR]: Incorrect date format. [yyyy-mm-dd] ");
+                System.out.println("[ERROR]: Incorrect date format. [yyyy-MM-dd] ");
                 passCheckTrip(scan, mySQLDB);
             }
         }
@@ -199,10 +199,9 @@ public class proj{
                 while(rs.next()) {
                     System.out.print(rs.getInt("id")+ ", ");
                     // Statement stmt2 = mySQLDB.createStatement();
-                    String query2= "SELECT * FROM Drivers  WHERE id =" + String.valueOf(rs.getInt("driver_id")) ;
+                    String query2= "SELECT * FROM Drivers WHERE id =" + String.valueOf(rs.getInt("driver_id")) ;
                     PreparedStatement preparedStmt2 = mySQLDB.prepareStatement(query2);
-                    // ResultSet rs2 = stmt2.executeQuery(); //rs2 table showing all trips tha 
-                    ResultSet rs2 = preparedStmt2.executeQuery(); //rs2 table showing all trips tha 
+                    ResultSet rs2 = preparedStmt2.executeQuery(); //rs2 table showing all drivers 
                     while (rs2.next()){
                         System.out.print(rs2.getString("name") + ", ");
                         System.out.print(rs2.getString("vehicle_id") + ", ");
@@ -292,67 +291,65 @@ public class proj{
         int dID =  Integer.parseInt(scan.nextLine()) ;  
 
         try{         
-        Statement stmt0 = mySQLDB.createStatement();
-        ResultSet rs0 = stmt0.executeQuery("SELECT * FROM Drivers WHERE id = " + dID);    //Check if id entered is in drivers
+            Statement stmt0 = mySQLDB.createStatement();
+            ResultSet rs0 = stmt0.executeQuery("SELECT * FROM Drivers WHERE id = " + dID);    //Check if id entered is in drivers
             if(rs0.next()) {                                                            //if result set has a value (driver_id exists), then proceed
-                try{         
-                    Statement stmt = mySQLDB.createStatement();
-                    ResultSet rs1 = stmt.executeQuery("SELECT * FROM Trips WHERE driver_id =" + dID + " AND end IS NULL");
-                            if(rs1.next()) {
-                                System.out.println("You already have an unfinished trip");
-                                return;
-                                }
-                            else{
+    
+                PreparedStatement stmt6 = mySQLDB.prepareStatement("SELECT Vehicles.model FROM Vehicles, Drivers WHERE Drivers.id="+ dID+ " AND Drivers.vehicle_id = Vehicles.id ");
+                
+                ResultSet rs6 = stmt6.executeQuery();
+                rs6.next();
+                String model_request = rs6.getString(1);
+                rs6.close();
+                stmt6.close();
 
-                                PreparedStatement stmt6 = mySQLDB.prepareStatement("SELECT Vehicles.model FROM Vehicles, Drivers WHERE Drivers.id="+ dID+ " AND Drivers.vehicle_id=Vehicles.id ");
-			                    
-                                ResultSet rs6 = stmt6.executeQuery();
-                                rs6.next();
-                                String var_model = rs6.getString(1);
-                                rs6.close();
-                                stmt6.close();
-
-                                try{
-                                    //String query1 = "CREATE OR REPLACE VIEW temp1 AS "
-                                                  // +"SELECT * FROM Requests "
-                                                   //+"WHERE taken = false ";
-                                    ///PreparedStatement stmt1 = mySQLDB.prepareStatement(query1);
-                                    ///stmt1.executeUpdate();
-                                    String query2 = "SELECT Requests.id, Passengers.name, Requests.passengers " 
-                                                    + "FROM Requests, Passengers, Drivers, Vehicles " 
-                                                    + "WHERE Requests.passengers <= Vehicles.seats " 
-                                                    + "AND Requests.model_year>=Vehicles.model_year " 
-                                                    + "AND Requests.model LIKE '%"+ var_model + "%'"
-                                                    + "AND Requests.model_year>=Vehicles.model_year "
-                                                    + "AND Drivers.id="+ dID
-                                                    + " AND Vehicles.id = Drivers.vehicle_id"
-                                                    + " AND Requests.taken=false";
-                                                
-                                    PreparedStatement stmt2 = mySQLDB.prepareStatement(query2);
-                                    //PreparedStatement stmt3 = mySQLDB.prepareStatement("DROP VIEW Requests");
-                                    ResultSet rs2 = stmt2.executeQuery();
-                                    //stmt3.executeUpdate();
-                                    System.out.printf("Request ID, Passenger name, Passengers \n");
-                                    while(rs2.next()){
-                                        for (int i = 1; i <= 3; i++){
-                                            System.out.printf(rs2.getString(i) + ",");
-                                        }    
-                                        System.out.printf("\n");
-                                    }
-                                     stmt.close();
-                                    rs2.close();
-                                    stmt2.close();
-                                }catch (SQLException e){
-                                    System.out.println(e.getMessage());
-                                }
-                                System.out.println("Please enter the request ID");
-                                int reqID =  Integer.parseInt(scan.nextLine()) ;  //req id not used
-            
-                            }
-                            
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                try{
+                    //String query1 = "CREATE OR REPLACE VIEW temp1 AS "
+                                // +"SELECT * FROM Requests "
+                                //+"WHERE taken = false ";
+                    ///PreparedStatement stmt1 = mySQLDB.prepareStatement(query1);
+                    ///stmt1.executeUpdate();
+                    System.out.println("WHY ARENTU PRINT");
+                    String query3 = "SELECT Requests.id, Passengers.name, Requests.passengers " 
+                                    + "FROM Requests, Passengers, Drivers, Vehicles, Trips " 
+                                    + "WHERE Requests.passengers <= Vehicles.seats " 
+                                    + "AND Requests.model_year >= Vehicles.model_year " 
+                                    + "AND Vehicles.model LIKE '%"+ model_request + "%'"
+                                    + "AND Requests.model_year >= Vehicles.model_year "
+                                    + "AND Drivers.id="+ dID
+                                    + " AND Vehicles.id = Drivers.vehicle_id"
+                                    + " AND Requests.taken = false"
+                                    + " AND Trips.end IS NULL";
+                                
+                    PreparedStatement stmt2 = mySQLDB.prepareStatement(query3);
+                    //PreparedStatement stmt3 = mySQLDB.prepareStatement("DROP VIEW Requests");
+                    ResultSet rs2 = stmt2.executeQuery();
+    
+                    boolean empty = true;
+                    while( rs2.next() ) {
+                    // ResultSet processing here
+                        empty = false;
                     }
+                    if( empty ) {
+                        System.out.println("No available requests!");
+                        driverMenu(mySQLDB);
+                    }
+
+                    //stmt3.executeUpdate();
+                    System.out.printf("Request ID, Passenger name, Passengers \n");
+                    while(rs2.next()){
+                        System.out.printf(rs2.getString(1) + "," + rs2.getString(2) + "," + rs2.getString(3));
+                        System.out.printf("\n");
+                    }
+                    stmt6.close();
+                    stmt0.close();
+                    stmt2.close();
+                }catch (SQLException e){
+                    System.out.println(e.getMessage());
+                }
+                System.out.println("Please enter the request ID.");
+                int reqID =  Integer.parseInt(scan.nextLine()) ;  //req id not used
+    
                 }
                 else{
                     System.out.println("[ERROR]: Driver ID doesn't exist!");
@@ -369,50 +366,68 @@ public class proj{
 			System.out.println("Please enter your ID.");
             int dID =  Integer.parseInt(scan.nextLine()) ;
 			 // parse the SNum obtained to integer
-            PreparedStatement stmt1 = mySQLDB.prepareStatement("SELECT COUNT(*) FROM Trips WHERE dID = ? AND End = NULL");
-			stmt1.setInt(1, dID);
+            PreparedStatement stmt1 = mySQLDB.prepareStatement("SELECT COUNT(*) FROM Trips WHERE driver_id=" + dID + " AND end IS NULL");
+			// stmt1.setInt(1, dID);
             ResultSet rs = stmt1.executeQuery();
 			rs.next();
-			int count = rs.getInt(1);
+			int countUnfinished = rs.getInt(1);
 			rs.close();
             stmt1.close();
             
-			if (count == 1){
-                PreparedStatement stmt3 = mySQLDB.prepareStatement("SELECT id, Passengerid, Start FROM Trips WHERE dID = ? AND End = NULL");
+			if (countUnfinished == 1){
+                PreparedStatement stmt3 = mySQLDB.prepareStatement("SELECT id, passenger_id, start FROM Trips WHERE driver_id = "
+                                                                    + dID + " AND end IS NULL");
                 ResultSet rs2 = stmt3.executeQuery();
                 System.out.println("Trip ID, Passenger ID, Start");
                 while(rs2.next()){
-                    for (int i = 1; i <= 3; i++){
-                        System.out.printf("," + rs2.getString(i));
-                    }    
+                    System.out.printf(rs2.getString(1) + "," + rs2.getString(2) + "," + rs2.getString(3));
                     System.out.printf("\n");
                 }
                 rs2.close();
-                System.out.println("Do you wish to finish the trip?");
+                System.out.println("Do you wish to finish the trip? [y/n]");
                 String str1 = scan.nextLine();
 
-                
-
-                if (str1=="y" || str1 == "Y"){
-                    PreparedStatement stmt2 = mySQLDB.prepareStatement("INSERT INTO Trips VALUES (?,?,?,?,CURDATE()),?,? ON DUPLICATE KEY UPDATE End = CURDATE()");
-				    stmt2.setInt(1, dID);
-				    stmt2.setDate(5, java.sql.Date.valueOf("2012-12-12")); 
-                    stmt2.executeUpdate();
-                    stmt2.close();
-                    String query4 ="SELECT Trips.id, Passengers.id, Trips.start, Trips.end, Trips.fee "+ 
-                                   "FROM Trips, Passengers "+
-                                   "WHERE " + dID + "= Trips.driver_id AND Trips.passenger_id = Passengers.id";
+                if (str1 == "y" | str1 == "Y"){
+                    // PreparedStatement stmt2 = mySQLDB.prepareStatement("INSERT INTO Trips VALUES (?,?,?,?,NOW(),?,?) ON DUPLICATE KEY UPDATE end = NOW()"); ///???
+				    // stmt2.setInt(1, dID);
+                    // stmt2.setDate(5, java.sql.Date.valueOf("2012-12-12"));
+                    String query4 ="SELECT Trips.id, Passengers.id, Trips.start, Trips.end, Trips.fee "
+                                    + "FROM Trips, Passengers "
+                                    + "WHERE " + dID + " = Trips.driver_id "
+                                    + "AND Trips.passenger_id = Passengers.id";
                     PreparedStatement stmt4 = mySQLDB.prepareStatement(query4);
                     ResultSet rs3 = stmt4.executeQuery();
+                    
+                    try{
+                        String insertQuery2 = "UPDATE Trips SET end = NOW() WHERE id = " + rs3.getString("id");
+                        PreparedStatement preparedStmt = mySQLDB.prepareStatement(insertQuery2);
+                        preparedStmt.execute();
+                        preparedStmt.close();
+                        }
+                        catch (SQLException e) {
+                            e.printStackTrace();
+                        } 
+                    ////set fee
+                    try{
+                        String insertQuery = "UPDATE Trips SET fee = (end - start) WHERE id = " + rs3.getString("id");
+                        PreparedStatement preparedStmt = mySQLDB.prepareStatement(insertQuery);
+                        preparedStmt.execute();
+                        preparedStmt.close();
+
+                        }
+                        catch (SQLException e) {
+                            e.printStackTrace();
+                        } 
+                    //calc fee and insert to table
+
+
                     System.out.println("Trip ID, Passenger Name, Start, End, Fee");
                     while(rs3.next()){
-                    for (int i = 1; i <= 5; i++){
-                        System.out.printf("," + rs3.getString(i));
-                    }    
-                    System.out.printf("\n");
-                }
-                rs3.close();
-				    
+                        System.out.printf(rs3.getString(1) + "," + rs3.getString(2) + "," + rs3.getString(3)+ "," + rs3.getString(4)+ "," + rs2.getString(5));
+                        System.out.printf("\n");
+                    }
+                    rs3.close();
+	 
                 }	
 			}
 			else{
@@ -543,7 +558,7 @@ public class proj{
              "(id INT(16), " +  
              "name VARCHAR(30), " +
              "vehicle_id VARCHAR(6), " +
-             "PRIMARY KEY (id));";  
+             "PRIMARY KEY (id))";  
         String vehicleTableQuery= "CREATE TABLE Vehicles" + 
              "(id VARCHAR(6), " +  
              "model VARCHAR(30), " +
@@ -570,8 +585,8 @@ public class proj{
               "model_year INT(4), " +
               "model VARCHAR(32), " +
               "passengers INT(8), " +
-              "taken BOOLEAN, " +
-              "PRIMARY KEY (id));";         
+              "taken BOOLEAN NOT NULL DEFAULT 0 " +
+              "PRIMARY KEY (id))";         
         try {
         Statement statement = mySQLDB.createStatement();
         System.out.print("Processing...");
@@ -626,7 +641,6 @@ public class proj{
             String addPassengers= "LOAD DATA LOCAL INFILE 'passengers.csv' INTO TABLE Passengers FIELDS TERMINATED BY ',' ;";
             String addTrips= "LOAD DATA LOCAL INFILE 'trips.csv' INTO TABLE Trips FIELDS TERMINATED BY ',' ;";
 
-            // System.out.printf("Please input a valid directory...");
             System.out.print("Processing...");
             
             statement.executeUpdate(addDrivers);            
@@ -661,7 +675,7 @@ public class proj{
             //System.out.println("Passengers Table Deleted");
             statement.executeUpdate(dropTrips);
             //System.out.println("Trips Table Deleted")
-            statement.executeUpdate(dropRequests);
+            statement.executeUpdate(dropRequests);    //not drop requests
             System.out.println("All Tables Deleted");
             statement.close();
         }
