@@ -13,11 +13,16 @@ public class proj{
 	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2633/db5";
 	public static String dbUsername = "Group5";
 	public static String dbPassword = "ride";
-    static int requestCount = 0;
     //////////////////////////////////////////////////////////////////////////////////////// Start of Passenger methods
 
     public static void passRequestRide(Scanner scan, Connection mySQLDB)throws SQLException{
-        int rID = requestCount++;
+        
+        String query99 ="SELECT MAX(id) FROM Requests";
+        PreparedStatement preparedStmt99= mySQLDB.prepareStatement(query99);
+        ResultSet rs99= preparedStmt99.executeQuery();
+        rs99.next();
+        int newRequestID = rs99.getInt(1) + 1 ; 
+        
         int earliestYear = -1;
         String modelName="";
         
@@ -63,7 +68,7 @@ public class proj{
                             + " values (?, ?, ?, ?, ?, ?)";
         PreparedStatement preparedStmt = mySQLDB.prepareStatement(insertQuery);
 
-        preparedStmt.setInt    (1, rID);
+        preparedStmt.setInt    (1, newRequestID);
         preparedStmt.setInt    (2, passID); // get passengerid from passengers
         preparedStmt.setInt    (3, earliestYear);
         preparedStmt.setString (4, modelName);
@@ -330,8 +335,6 @@ public class proj{
                                     + " AND Vehicles.id = Drivers.vehicle_id"
                                     + " AND Requests.taken = 0"
                                     ;
-                    
-                    System.out.println(query3);
                                 
                     PreparedStatement stmt2 = mySQLDB.prepareStatement(query3);
                     //PreparedStatement stmt3 = mySQLDB.prepareStatement("DROP VIEW Requests");
@@ -351,7 +354,7 @@ public class proj{
                     rs2.first();
                     System.out.printf("Request ID, Passenger name, Passengers \n");
                     do{
-                        System.out.printf(rs2.getInt(1) + "," + rs2.getString(2) + "," + rs2.getInt(3));
+                        System.out.printf(rs2.getInt(1) + ", " + rs2.getString(2) + ", " + rs2.getInt(3));
                         System.out.printf("\n");
                     }
                     while(rs2.next());
@@ -403,14 +406,27 @@ public class proj{
                     preparedStmt4.setInt    (1, newTripID); 
                     preparedStmt4.setInt    (2, dID); // get passengerid from passengers
                     preparedStmt4.setInt    (3, passenger_id);
-                    
                     preparedStmt4.execute();
-                    
                     }
                     
                     catch (SQLException e ) {
                     System.out.println("An error has occured on passRequestRide");
                     e.printStackTrace();
+                    
+                }
+                    String query10 ="SELECT Trips.id, Passengers.name, Trips.start "  //
+                    + "FROM Trips, Passengers"
+                    + " WHERE Trips.driver_id = "+ dID 
+                    + " AND Trips.passenger_id = Passengers.id"
+                    + " AND Trips.id =" + newTripID;
+
+                    PreparedStatement stmt10 = mySQLDB.prepareStatement(query10);
+                    ResultSet rs10 = stmt10.executeQuery();
+                    
+                    System.out.println("Trip ID, Passenger Name, Start");
+                    while(rs10.next()){
+                        System.out.printf(rs10.getString(1) + ", " + rs10.getString(2) + ", " + rs10.getString(3));
+                        System.out.printf("\n");
                     }
 
                 }
@@ -443,14 +459,13 @@ public class proj{
                 ResultSet rs2 = stmt3.executeQuery();
                 System.out.println("Trip ID, Passenger ID, Start");
                 while(rs2.next()){
-                    System.out.printf(rs2.getString(1) + "," + rs2.getString(2) + "," + rs2.getString(3));
+                    System.out.printf(rs2.getString(1) + ", " + rs2.getString(2) + ", " + rs2.getString(3));
                     System.out.printf("\n");
                 }
                 System.out.println("Do you wish to finish the trip? [y/n]");
                 String str1 = scan.nextLine(); //error handling
 
                 if (str1.equals("y") | str1.equals("Y")){   //compare
-                    // System.out.println("condition met");
                     String query4 ="SELECT Trips.id, Passengers.name, Trips.start, Trips.end, Trips.fee "  //get driver's past trips
                                     + "FROM Trips, Passengers "
                                     + "WHERE " + dID + " = Trips.driver_id "
@@ -459,7 +474,6 @@ public class proj{
                     ResultSet rs3 = stmt4.executeQuery();
                     
                     try{
-                        System.out.println("update cur time");
                         rs2.first();
                         String insertQuery2 = "UPDATE Trips SET end = NOW() WHERE id = " + rs2.getString("id");  //update end to current time
                         System.out.println(rs2.getString("id"));
@@ -471,15 +485,17 @@ public class proj{
                             e.printStackTrace();
                         } 
                     ////get time diff in minutes
+                                        
+                    int updatedTripID = rs2.getInt(1); 
+
                     try{
                         System.out.println("select get diff");
-                        String insertQuery3 = "SELECT TIMESTAMPDIFF(MINUTE, start, end) FROM Trips";               //get difference in
+                        String insertQuery3 = "SELECT TIMESTAMPDIFF(MINUTE, start, end) FROM Trips WHERE id="+ updatedTripID;               //get difference in
                         PreparedStatement preparedStmt3 = mySQLDB.prepareStatement(insertQuery3);
                         ResultSet rs5 = preparedStmt3.executeQuery();
                         rs5.next();
-                        minFee = rs5.getInt(1);        // cannot finr minFee symbol
-                        // System.out.println(minFee);
-                        // preparedStmt3.close();
+                        minFee = rs5.getInt(1);
+                        System.out.println(minFee);
                         }
                         catch (SQLException e) {
                             e.printStackTrace();
@@ -490,15 +506,11 @@ public class proj{
                         String insertQuery = "UPDATE Trips SET fee =" + minFee + " WHERE id = " + rs2.getString("id");
                         PreparedStatement preparedStmt4 = mySQLDB.prepareStatement(insertQuery);
                         preparedStmt4.execute();
-                        System.out.println("updated fee");
-                        // preparedStmt4.close();
                         }
                         catch (SQLException e) {
                             e.printStackTrace();
                         } 
                     //calc fee and insert to table  
-                    
-                    int updatedTripID = rs2.getInt(1); 
 
                     String query9 ="SELECT Trips.id, Passengers.name, Trips.start, Trips.end, Trips.fee "  //get driver's past trips
                     + "FROM Trips, Passengers "
@@ -511,11 +523,14 @@ public class proj{
                     
                     System.out.println("Trip ID, Passenger Name, Start, End, Fee");
                     while(rs9.next()){
-                        System.out.printf(rs9.getString(1) + "," + rs9.getString(2) + "," + rs9.getString(3)+ "," + rs9.getString(4)+ "," + rs9.getString(5));
+                        System.out.printf(rs9.getString(1) + ", " + rs9.getString(2) + ", " + rs9.getString(3)+ ", " + rs9.getString(4)+ ", " + rs9.getString(5));
                         System.out.printf("\n");
                     }
                     rs3.close();
                     rs2.close();
+                }
+                else{
+                    return;
                 }	
 			}
 			else{
@@ -549,6 +564,7 @@ public class proj{
                 float avgRating = rs2.getFloat(1);
                 System.out.println("Your driver rating is "+ avgRating + ".");
                 rs2.close();
+            
                 stmt2.close();
             }
             else{
